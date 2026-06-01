@@ -39,4 +39,13 @@ export class CheckinRepository implements ICheckinRepository {
   async count(filters: any) {
     return prisma.checkins.count({ where: filters.where })
   }
+
+  async getEmpleadoIdsByPsicologo(psicologoId: string): Promise<string[]> {
+    const citas = await prisma.citas.findMany({
+      where: { psicologo_id: psicologoId, estado: 'completada' },
+      select: { empleado_id: true },
+      distinct: ['empleado_id'],
+    })
+    return citas.map((c) => c.empleado_id)
+  }
 }

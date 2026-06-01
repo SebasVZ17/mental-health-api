@@ -60,10 +60,13 @@ export class UsuarioUseCase {
       nombre: string
       email: string
       rol: string
+      activo: boolean | null
       password_hash: string
     } | null
 
     if (!usuario) throw { status: 401, message: 'Credenciales inválidas' } as AppError
+
+    if (usuario.activo === false) throw { status: 403, message: 'Tu cuenta está desactivada. Contacta al administrador.' } as AppError
 
     const passwordValido = await bcrypt.compare(password, usuario.password_hash)
     if (!passwordValido) throw { status: 401, message: 'Credenciales inválidas' } as AppError

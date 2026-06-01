@@ -49,6 +49,19 @@ export class CitaRepository implements ICitaRepository {
     })
   }
 
+  async getMisPacientes(psicologoId: string) {
+    const citas = await prisma.citas.findMany({
+      where: { psicologo_id: psicologoId, estado: 'completada' },
+      select: {
+        usuarios_citas_empleado_idTousuarios: {
+          select: { id: true, nombre: true, email: true },
+        },
+      },
+      distinct: ['empleado_id'],
+    })
+    return citas.map((c) => c.usuarios_citas_empleado_idTousuarios)
+  }
+
   async count(filters: any) {
     return prisma.citas.count({ where: filters.where })
   }

@@ -13,4 +13,5 @@ export interface ICheckinRepository {
   update(id: string, data: UpdateCheckinDTO): Promise<object>
   delete(id: string): Promise<void>
   count(filters: { where: object }): Promise<number>
+  getEmpleadoIdsByPsicologo(psicologoId: string): Promise<string[]>
 }

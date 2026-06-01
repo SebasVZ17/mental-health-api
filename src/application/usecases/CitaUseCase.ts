@@ -64,4 +64,8 @@ export class CitaUseCase {
     if (!cita) throw { status: 404, message: 'Cita no encontrada' } as AppError
     return this.citaRepository.cancel(id)
   }
+
+  async getMisPacientes(psicologoId: string) {
+    return this.citaRepository.getMisPacientes(psicologoId)
+  }
 }

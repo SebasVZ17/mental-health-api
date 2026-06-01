@@ -13,4 +13,5 @@ export interface ICitaRepository {
   update(id: string, data: UpdateCitaDTO): Promise<object>
   cancel(id: string): Promise<object>
   count(filters: { where: object }): Promise<number>
+  getMisPacientes(psicologoId: string): Promise<object[]>
 }

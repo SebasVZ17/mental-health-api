@@ -47,6 +47,16 @@ export const updateCita: any = async (req: AuthRequest, res: Response): Promise<
   }
 }
 
+export const getMisPacientes: any = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const pacientes = await citaUseCase.getMisPacientes(req.usuario.id)
+    res.json(pacientes)
+  } catch (error: unknown) {
+    const err = error as { status?: number; message?: string }
+    res.status(err.status || 500).json({ error: err.message || 'Error interno del servidor' })
+  }
+}
+
 export const deleteCita: any = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     await citaUseCase.cancel(req.params.id as string)

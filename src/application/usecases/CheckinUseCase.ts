@@ -13,8 +13,14 @@ export class CheckinUseCase {
   async getAll(usuario: UsuarioPayload, query: PaginationQuery) {
     const { page = '1', limit = '10' } = query
     const skip = (parseInt(page) - 1) * parseInt(limit)
-    const where: Record<string, unknown> =
-      usuario.rol === 'empleado' ? { empleado_id: usuario.id } : {}
+
+    let where: Record<string, unknown> = {}
+    if (usuario.rol === 'empleado') {
+      where = { empleado_id: usuario.id }
+    } else if (usuario.rol === 'psicologo') {
+      const citasCompletadas = await this.checkinRepository.getEmpleadoIdsByPsicologo(usuario.id)
+      where = { empleado_id: { in: citasCompletadas } }
+    }
 
     const [checkins, total] = await Promise.all([
       this.checkinRepository.findAll({ where, skip, take: parseInt(limit) }),
