@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model checkins {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  empleado_id  String    @db.Uuid
+  fecha        DateTime  @default(dbgenerated("CURRENT_DATE")) @db.Date
+  estado_animo Int
+  nivel_estres Int
+  horas_sueno  Decimal?  @db.Decimal(4, 1)
+  notas        String?
+  creado_en    DateTime? @default(now()) @db.Timestamptz(6)
+  usuarios     usuarios  @relation(fields: [empleado_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([empleado_id, fecha])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model citas {
+  id                                    String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  empleado_id                           String         @db.Uuid
+  psicologo_id                          String         @db.Uuid
+  fecha_hora                            DateTime       @db.Timestamptz(6)
+  duracion_minutos                      Int?           @default(60)
+  estado                                String?        @default("pendiente") @db.VarChar(20)
+  notas                                 String?
+  link_reunion                          String?
+  creado_en                             DateTime?      @default(now()) @db.Timestamptz(6)
+  usuarios_citas_empleado_idTousuarios  usuarios       @relation("citas_empleado_idTousuarios", fields: [empleado_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  usuarios_citas_psicologo_idTousuarios usuarios       @relation("citas_psicologo_idTousuarios", fields: [psicologo_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  valoraciones                          valoraciones[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model mensajes {
+  id                                          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  remitente_id                                String    @db.Uuid
+  destinatario_id                             String    @db.Uuid
+  contenido                                   String
+  leido                                       Boolean?  @default(false)
+  creado_en                                   DateTime? @default(now()) @db.Timestamptz(6)
+  usuarios_mensajes_destinatario_idTousuarios usuarios  @relation("mensajes_destinatario_idTousuarios", fields: [destinatario_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  usuarios_mensajes_remitente_idTousuarios    usuarios  @relation("mensajes_remitente_idTousuarios", fields: [remitente_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model psicologos {
+  id               String   @id @db.Uuid
+  numero_licencia  String   @db.VarChar(100)
+  especialidad     String?  @db.VarChar(150)
+  a_os_experiencia Int?     @map("años_experiencia")
+  biografia        String?
+  usuarios         usuarios @relation(fields: [id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model recomendaciones {
+  id                       String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  titulo                   String                     @db.VarChar(200)
+  descripcion              String?
+  tipo                     String?                    @db.VarChar(50)
+  url                      String?
+  activo                   Boolean?                   @default(true)
+  creado_en                DateTime?                  @default(now()) @db.Timestamptz(6)
+  recomendaciones_empleado recomendaciones_empleado[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model recomendaciones_empleado {
+  id               String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  empleado_id      String          @db.Uuid
+  recomendacion_id String          @db.Uuid
+  completado       Boolean?        @default(false)
+  completado_en    DateTime?       @db.Timestamptz(6)
+  asignado_en      DateTime?       @default(now()) @db.Timestamptz(6)
+  usuarios         usuarios        @relation(fields: [empleado_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  recomendaciones  recomendaciones @relation(fields: [recomendacion_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model usuarios {
+  id                                               String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre                                           String                     @db.VarChar(100)
+  email                                            String                     @unique @db.VarChar(150)
+  password_hash                                    String
+  rol                                              String                     @db.VarChar(20)
+  empresa                                          String?                    @db.VarChar(150)
+  cargo                                            String?                    @db.VarChar(100)
+  avatar_url                                       String?
+  activo                                           Boolean?                   @default(true)
+  creado_en                                        DateTime?                  @default(now()) @db.Timestamptz(6)
+  checkins                                         checkins[]
+  citas_citas_empleado_idTousuarios                citas[]                    @relation("citas_empleado_idTousuarios")
+  citas_citas_psicologo_idTousuarios               citas[]                    @relation("citas_psicologo_idTousuarios")
+  mensajes_mensajes_destinatario_idTousuarios      mensajes[]                 @relation("mensajes_destinatario_idTousuarios")
+  mensajes_mensajes_remitente_idTousuarios         mensajes[]                 @relation("mensajes_remitente_idTousuarios")
+  psicologos                                       psicologos?
+  recomendaciones_empleado                         recomendaciones_empleado[]
+  valoraciones_valoraciones_empleado_idTousuarios  valoraciones[]             @relation("valoraciones_empleado_idTousuarios")
+  valoraciones_valoraciones_psicologo_idTousuarios valoraciones[]             @relation("valoraciones_psicologo_idTousuarios")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model valoraciones {
+  id                                           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  empleado_id                                  String    @db.Uuid
+  psicologo_id                                 String    @db.Uuid
+  cita_id                                      String    @db.Uuid
+  puntuacion                                   Int
+  comentario                                   String?
+  creado_en                                    DateTime? @default(now()) @db.Timestamptz(6)
+  citas                                        citas     @relation(fields: [cita_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  usuarios_valoraciones_empleado_idTousuarios  usuarios  @relation("valoraciones_empleado_idTousuarios", fields: [empleado_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  usuarios_valoraciones_psicologo_idTousuarios usuarios  @relation("valoraciones_psicologo_idTousuarios", fields: [psicologo_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([empleado_id, cita_id])
+}
