@@ -35,6 +35,6 @@ app.get('/', (req: Request, res: Response) => {
 })
 
 const PORT = process.env.PORT || 4000
-app.listen(PORT, () => {
-  process.stdout.write(`Servidor corriendo en http://localhost:${PORT}\n`)
+app.listen(Number(PORT), '0.0.0.0', () => {
+  process.stdout.write(`Servidor corriendo en http://0.0.0.0:${PORT}\n`)
 })
